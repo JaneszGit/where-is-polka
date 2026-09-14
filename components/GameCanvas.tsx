@@ -22,7 +22,6 @@ export default function GameCanvas() {
   const [gameOver, setGameOver] = useState(false);
   const [running, setRunning] = useState(false);
 
-  // Mutábilis játékállapot, ami nem igényel re-rendert minden frame-en.
   const state = useRef({
     polkaY: GROUND_Y - 24,
     velocity: 0,
@@ -69,12 +68,12 @@ export default function GameCanvas() {
     let animationId: number;
 
     function loop() {
+      if (!ctx) return;
       const s = state.current;
 
       if (running && !gameOver) {
         s.frame += 1;
 
-        // Fizika
         s.velocity += GRAVITY;
         s.polkaY += s.velocity;
         if (s.polkaY > GROUND_Y - 24) {
@@ -83,14 +82,12 @@ export default function GameCanvas() {
           s.isJumping = false;
         }
 
-        // Akadályok (rollerek) generálása
         if (s.frame % 70 === 0) {
           s.obstacles.push({ x: WIDTH, width: 14, height: 22 });
         }
         s.obstacles.forEach((o) => (o.x -= s.speed));
         s.obstacles = s.obstacles.filter((o) => o.x + o.width > 0);
 
-        // Ütközés
         const polkaBox = { x: 30, y: s.polkaY, width: 26, height: 24 };
         for (const o of s.obstacles) {
           const oBox = { x: o.x, y: GROUND_Y - o.height, width: o.width, height: o.height };
@@ -117,21 +114,17 @@ export default function GameCanvas() {
         setScore(Math.floor(s.scoreCounter));
       }
 
-      // --- Rajzolás (egyszerű, "pixel art" stílusú blokkokkal) ---
       ctx.fillStyle = "#F7F4EE";
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-      // talaj
       ctx.fillStyle = "#E4DFD3";
       ctx.fillRect(0, GROUND_Y, WIDTH, HEIGHT - GROUND_Y);
 
-      // Polka (egyszerű blokk-kutyus, amíg nincs saját sprite)
       ctx.fillStyle = "#C17A55";
       ctx.fillRect(30, s.polkaY, 26, 24);
       ctx.fillStyle = "#232220";
-      ctx.fillRect(48, s.polkaY + 4, 5, 5); // szem
+      ctx.fillRect(48, s.polkaY + 4, 5, 5);
 
-      // akadályok - lime rollerek
       ctx.fillStyle = "#9CCB3B";
       s.obstacles.forEach((o) => {
         ctx.fillRect(o.x, GROUND_Y - o.height, o.width, o.height);
